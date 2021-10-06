@@ -2,12 +2,16 @@ import re
 
 class Line:
     """Line of text in the Voynich Manuscript"""
-    def __init__(self, page_name, line_num, locator, locus, text):
+    def __init__(self, page_name, line_num, locator, locus, text, strip_paragraph_markers=True):
         self.page_name = page_name
         self.line_num = line_num
         self.locator = locator
         self.locus = locus
         self.text = text
+        
+        if strip_paragraph_markers:
+            self.start_paragraph = "<%>" in text
+            self.end_paragraph = "<$>" in text
     
     def __len__(self):
         return len(self.text)
@@ -19,7 +23,7 @@ class Line:
         return iter(self.text)
     
     def __repr__(self):
-        return f"Line({self.text})"
+        return f"Line(<{self.page_name}.{self.line_num},{self.locator}{self.locus}> {self.text})"
 
 class Page:
     """Page (one side of paper) in the Voynich manuscript"""
@@ -37,6 +41,7 @@ class Page:
         self.hand = hand
         self.currier_hand = currier_hand
         self.extraneous_writing = extraneous_writing
+        self.section = None # this gets filled out in VoynichManuscript._assign_sections()
         
         self.lines = []
         
@@ -52,7 +57,7 @@ class Page:
         return iter(self.lines)
     
     def __repr__(self):
-        return f"Page(page_name={self.page_name}, quire_num={self.quire_num}, folio_num={self.folio_num}, num_lines={self.__len__()}, illust_type={self.illust_type})"
+        return f"Page(page_name={self.page_name}, num_lines={self.__len__()}, illust_type={self.illust_type}, section={self.section})"
         
     def iterlines(self):
         return self.__iter__()
@@ -62,7 +67,11 @@ class VoynichManuscript:
     def __init__(self, path_to_txt, inline_comments=False):
         self.inline_comments = inline_comments
         self.pages = dict()
+        # populate the self.pages dict
         self._parse_txt(path_to_txt)
+        
+        # assign illust_types based on barbara shailor's description of them
+        self._assign_sections()
         
     def __repr__(self):
         return f"VoynichManuscript(num_pages={len(self.pages)}, inline_comments={self.inline_comments})"
@@ -86,7 +95,7 @@ class VoynichManuscript:
             if "," not in a:
                 # Create a new page object, store it
                 page_name = a
-                page = Page(page_name, _parse_variables(b))
+                page = Page(page_name, **_parse_variables(b))
                 self.pages[page_name] = page
             
             # or if this line is a transliteration item 
@@ -106,6 +115,27 @@ class VoynichManuscript:
                 
                 # make new line object and store it
                 page.lines.append(Line(page_name, line_num, locator, locus, text))
+    
+    def _assign_sections(self):
+        """Assigns sections based on this description
+        https://pre1600ms.beinecke.library.yale.edu/docs/pre1600.ms408.HTM"""
+        for k in self.pages.keys():
+            self.pages[k].section = page_name_to_section[k]            
+    
+    def get_pages(self):
+        return self.pages.values()
+    
+    def get_lines(self):
+        lines = []
+        for p in self.iterpages():
+            lines.extend(p.lines)
+        return lines
+    
+    def iterpages(self):
+        return iter(self.get_pages())
+    
+    def iterlines(self):
+        return iter(self.get_lines())
 
 # For converting letters to numbers (both upper and lower case map to same number)
 alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -169,3 +199,233 @@ def _parse_variables(var_str):
             var_dict["extraneous_writing"] = val # will leave this as abbreviation for now
     
     return var_dict
+
+page_name_to_section = {
+    'f1r': 'Herbal',
+    'f1v': 'Herbal',
+    'f2r': 'Herbal',
+    'f2v': 'Herbal',
+    'f3r': 'Herbal',
+    'f3v': 'Herbal',
+    'f4r': 'Herbal',
+    'f4v': 'Herbal',
+    'f5r': 'Herbal',
+    'f5v': 'Herbal',
+    'f6r': 'Herbal',
+    'f6v': 'Herbal',
+    'f7r': 'Herbal',
+    'f7v': 'Herbal',
+    'f8r': 'Herbal',
+    'f8v': 'Herbal',
+    'f9r': 'Herbal',
+    'f9v': 'Herbal',
+    'f10r': 'Herbal',
+    'f10v': 'Herbal',
+    'f11r': 'Herbal',
+    'f11v': 'Herbal',
+    'f13r': 'Herbal',
+    'f13v': 'Herbal',
+    'f14r': 'Herbal',
+    'f14v': 'Herbal',
+    'f15r': 'Herbal',
+    'f15v': 'Herbal',
+    'f16r': 'Herbal',
+    'f16v': 'Herbal',
+    'f17r': 'Herbal',
+    'f17v': 'Herbal',
+    'f18r': 'Herbal',
+    'f18v': 'Herbal',
+    'f19r': 'Herbal',
+    'f19v': 'Herbal',
+    'f20r': 'Herbal',
+    'f20v': 'Herbal',
+    'f21r': 'Herbal',
+    'f21v': 'Herbal',
+    'f22r': 'Herbal',
+    'f22v': 'Herbal',
+    'f23r': 'Herbal',
+    'f23v': 'Herbal',
+    'f24r': 'Herbal',
+    'f24v': 'Herbal',
+    'f25r': 'Herbal',
+    'f25v': 'Herbal',
+    'f26r': 'Herbal',
+    'f26v': 'Herbal',
+    'f27r': 'Herbal',
+    'f27v': 'Herbal',
+    'f28r': 'Herbal',
+    'f28v': 'Herbal',
+    'f29r': 'Herbal',
+    'f29v': 'Herbal',
+    'f30r': 'Herbal',
+    'f30v': 'Herbal',
+    'f31r': 'Herbal',
+    'f31v': 'Herbal',
+    'f32r': 'Herbal',
+    'f32v': 'Herbal',
+    'f33r': 'Herbal',
+    'f33v': 'Herbal',
+    'f34r': 'Herbal',
+    'f34v': 'Herbal',
+    'f35r': 'Herbal',
+    'f35v': 'Herbal',
+    'f36r': 'Herbal',
+    'f36v': 'Herbal',
+    'f37r': 'Herbal',
+    'f37v': 'Herbal',
+    'f38r': 'Herbal',
+    'f38v': 'Herbal',
+    'f39r': 'Herbal',
+    'f39v': 'Herbal',
+    'f40r': 'Herbal',
+    'f40v': 'Herbal',
+    'f41r': 'Herbal',
+    'f41v': 'Herbal',
+    'f42r': 'Herbal',
+    'f42v': 'Herbal',
+    'f43r': 'Herbal',
+    'f43v': 'Herbal',
+    'f44r': 'Herbal',
+    'f44v': 'Herbal',
+    'f45r': 'Herbal',
+    'f45v': 'Herbal',
+    'f46r': 'Herbal',
+    'f46v': 'Herbal',
+    'f47r': 'Herbal',
+    'f47v': 'Herbal',
+    'f48r': 'Herbal',
+    'f48v': 'Herbal',
+    'f49r': 'Herbal',
+    'f49v': 'Herbal',
+    'f50r': 'Herbal',
+    'f50v': 'Herbal',
+    'f51r': 'Herbal',
+    'f51v': 'Herbal',
+    'f52r': 'Herbal',
+    'f52v': 'Herbal',
+    'f53r': 'Herbal',
+    'f53v': 'Herbal',
+    'f54r': 'Herbal',
+    'f54v': 'Herbal',
+    'f55r': 'Herbal',
+    'f55v': 'Herbal',
+    'f56r': 'Herbal',
+    'f56v': 'Herbal',
+    'f57r': 'Herbal',
+    'f57v': 'Herbal',
+    'f58r': 'Herbal',
+    'f58v': 'Herbal',
+    'f65r': 'Herbal',
+    'f65v': 'Herbal',
+    'f66r': 'Herbal',
+    'f66v': 'Herbal',
+    'f67r1': 'Astronomical',
+    'f67r2': 'Astronomical',
+    'f67v2': 'Astronomical',
+    'f67v1': 'Astronomical',
+    'f68r1': 'Astronomical',
+    'f68r2': 'Astronomical',
+    'f68r3': 'Astronomical',
+    'f68v3': 'Astronomical',
+    'f68v2': 'Astronomical',
+    'f68v1': 'Astronomical',
+    'f69r': 'Astronomical',
+    'f69v': 'Astronomical',
+    'f70r1': 'Astronomical',
+    'f70r2': 'Astronomical',
+    'f70v2': 'Astronomical',
+    'f70v1': 'Astronomical',
+    'f71r': 'Astronomical',
+    'f71v': 'Astronomical',
+    'f72r1': 'Astronomical',
+    'f72r2': 'Astronomical',
+    'f72r3': 'Astronomical',
+    'f72v3': 'Astronomical',
+    'f72v2': 'Astronomical',
+    'f72v1': 'Astronomical',
+    'f73r': 'Astronomical',
+    'f73v': 'Astronomical',
+    'f75r': 'Biological',
+    'f75v': 'Biological',
+    'f76r': 'Biological',
+    'f76v': 'Biological',
+    'f77r': 'Biological',
+    'f77v': 'Biological',
+    'f78r': 'Biological',
+    'f78v': 'Biological',
+    'f79r': 'Biological',
+    'f79v': 'Biological',
+    'f80r': 'Biological',
+    'f80v': 'Biological',
+    'f81r': 'Biological',
+    'f81v': 'Biological',
+    'f82r': 'Biological',
+    'f82v': 'Biological',
+    'f83r': 'Biological',
+    'f83v': 'Biological',
+    'f84r': 'Biological',
+    'f84v': 'Biological',
+    'f85r1': 'Cosmological',
+    'f85r2': 'Cosmological',
+    'fRos': 'Cosmological',
+    'f86v4': 'Cosmological',
+    'f86v6': 'Cosmological',
+    'f86v5': 'Cosmological',
+    'f86v3': 'Cosmological',
+    'f87r': 'Pharmaceutical',
+    'f87v': 'Pharmaceutical',
+    'f88r': 'Pharmaceutical',
+    'f88v': 'Pharmaceutical',
+    'f89r1': 'Pharmaceutical',
+    'f89r2': 'Pharmaceutical',
+    'f89v2': 'Pharmaceutical',
+    'f89v1': 'Pharmaceutical',
+    'f90r1': 'Pharmaceutical',
+    'f90r2': 'Pharmaceutical',
+    'f90v2': 'Pharmaceutical',
+    'f90v1': 'Pharmaceutical',
+    'f93r': 'Pharmaceutical',
+    'f93v': 'Pharmaceutical',
+    'f94r': 'Pharmaceutical',
+    'f94v': 'Pharmaceutical',
+    'f95r1': 'Pharmaceutical',
+    'f95r2': 'Pharmaceutical',
+    'f95v2': 'Pharmaceutical',
+    'f95v1': 'Pharmaceutical',
+    'f96r': 'Pharmaceutical',
+    'f96v': 'Pharmaceutical',
+    'f99r': 'Pharmaceutical',
+    'f99v': 'Pharmaceutical',
+    'f100r': 'Pharmaceutical',
+    'f100v': 'Pharmaceutical',
+    'f101r': 'Pharmaceutical',
+    'f101v': 'Pharmaceutical',
+    'f102r1': 'Pharmaceutical',
+    'f102r2': 'Pharmaceutical',
+    'f102v2': 'Pharmaceutical',
+    'f102v1': 'Pharmaceutical',
+    'f103r': 'Recipes',
+    'f103v': 'Recipes',
+    'f104r': 'Recipes',
+    'f104v': 'Recipes',
+    'f105r': 'Recipes',
+    'f105v': 'Recipes',
+    'f106r': 'Recipes',
+    'f106v': 'Recipes',
+    'f107r': 'Recipes',
+    'f107v': 'Recipes',
+    'f108r': 'Recipes',
+    'f108v': 'Recipes',
+    'f111r': 'Recipes',
+    'f111v': 'Recipes',
+    'f112r': 'Recipes',
+    'f112v': 'Recipes',
+    'f113r': 'Recipes',
+    'f113v': 'Recipes',
+    'f114r': 'Recipes',
+    'f114v': 'Recipes',
+    'f115r': 'Recipes',
+    'f115v': 'Recipes',
+    'f116r': 'Recipes',
+    'f116v': 'Recipes'
+}
