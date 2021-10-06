@@ -1,6 +1,7 @@
 import re
 
 class Line:
+    """Line of text in the Voynich Manuscript"""
     def __init__(self, page_name, line_num, locator, locus, text):
         self.page_name = page_name
         self.line_num = line_num
@@ -19,9 +20,9 @@ class Line:
     
     def __repr__(self):
         return f"Line({self.text})"
-        
 
 class Page:
+    """Page (one side of paper) in the Voynich manuscript"""
     def __init__(self, page_name, page_num=None, quire_num=None,
                  folio_num=None, bifolio_num=None, illust_type=None,
                  currier_language=None, hand=None, currier_hand=None,
@@ -57,6 +58,7 @@ class Page:
         return self.__iter__()
     
 class VoynichManuscript:
+    """VoynichManuscript object, containing pages/lines of text, and methods for manipulating/traversing data in it."""
     def __init__(self, path_to_txt, inline_comments=False):
         self.inline_comments = inline_comments
         self.pages = dict()
@@ -104,8 +106,6 @@ class VoynichManuscript:
                 
                 # make new line object and store it
                 page.lines.append(Line(page_name, line_num, locator, locus, text))
-                
-
 
 # For converting letters to numbers (both upper and lower case map to same number)
 alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -126,6 +126,21 @@ char_to_illust_type = {
 }
 
 def _parse_variables(var_str):
+    """Converts a variable list in page header to a dict of variables and their values.
+    Used when parsing input text to construct a Page object
+    
+    Example:
+    >>> _parse_variables("<! $Q=M $P=M $F=w $B=4 $I=B $L=B $H=2 $C=2>")
+    {'quire_num': 13, 'page_num': 13, 'folio_num': 23, 'bifolio_num': 4,
+     'illust_type': 'Biological', 'currier_language': 'B', 'hand': 2,
+     'currier_hand': 2}
+     
+    Args:
+        var_str (str): header, formatted like in example above
+
+    Returns:
+        dict: of variables and their values 
+    """
     var_dict = dict()
     
     # split the header str into tuples of variables and their values
