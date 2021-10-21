@@ -2,17 +2,13 @@ import re
 
 class Line:
     """Line of text in the Voynich Manuscript"""
-    def __init__(self, page_name, line_num, locator, locus, text, strip_paragraph_markers=True):
+    def __init__(self, page_name, line_num, locator, locus, text):
         self.page_name = page_name
         self.line_num = line_num
         self.locator = locator
         self.locus = locus
         self.text = text
         
-        if strip_paragraph_markers:
-            self.start_paragraph = "<%>" in text
-            self.end_paragraph = "<$>" in text
-    
     def __len__(self):
         return len(self.text)
     
@@ -26,7 +22,7 @@ class Line:
         return f"Line(<{self.page_name}.{self.line_num},{self.locator}{self.locus}> {self.text})"
 
 class Page:
-    """Page (one side of paper) in the Voynich manuscript"""
+    """Page in the Voynich manuscript"""
     def __init__(self, page_name, page_num=None, quire_num=None,
                  folio_num=None, bifolio_num=None, illust_type=None,
                  currier_language=None, hand=None, currier_hand=None,
@@ -44,7 +40,7 @@ class Page:
         self.section = None # this gets filled out in VoynichManuscript._assign_sections()
         
         self.lines = []
-        self.paragraphs = []
+        self.paragraphs = [] # this gets filled out in VoynichManuscript._parse_paragraphs()
         
         self.num_lines = self.__len__()
 
@@ -68,6 +64,7 @@ class VoynichManuscript:
     def __init__(self, path_to_txt, inline_comments=False):
         self.inline_comments = inline_comments
         self.pages = dict()
+        
         # populate the self.pages dict
         self._parse_txt(path_to_txt)
         
@@ -81,6 +78,7 @@ class VoynichManuscript:
         return f"VoynichManuscript(num_pages={len(self.pages)}, inline_comments={self.inline_comments})"
         
     def _parse_txt(self, path_to_txt):
+        """Preprocessing: Parse the input text file to populate line and page objects"""
         # read in txt file (without comments or blank lines)
         with open(path_to_txt, "r") as f:
             lines = [l.strip() for l in f.readlines() if l[0] != "#" and len(l) > 1]
@@ -114,24 +112,28 @@ class VoynichManuscript:
                 
                 # remove inline comments (if specified)
                 if not self.inline_comments:
-                    # text = text.replace("<->", "") # remove gap indicator (?)
                     text = re.sub("\<!.*?\>", "", text) # anything between <! and >
                     
                 # make new line object and store it
                 page.lines.append(Line(page_name, line_num, locator, locus, text))
     
     def _assign_sections(self):
-        """Assigns sections based on this description
+        """Preprocessing: Assigns sections based on this description
         https://pre1600ms.beinecke.library.yale.edu/docs/pre1600.ms408.HTM"""
         for k in self.pages.keys():
             self.pages[k].section = page_name_to_section[k]   
             
     def _parse_paragraphs(self, remove_gaps=True):
+        """Preprocessing: Create paragraph strings for each page, store them in each page object
+
+        Args:
+            remove_gaps (bool, optional): If true, remove "<->" from each line. Defaults to True.
+        """
         for page in self.iterpages():
             paragraph = ""
             for line in page.iterlines():
-                if "P" in line.locus:
-                    text = line.text.replace("<%>", "")
+                if "P" in line.locus: # if this is paragraph text
+                    text = line.text.replace("<%>", "") # remove paragraph beginning marker
                     
                     if remove_gaps:
                         text = text.replace("<->", "")
@@ -141,24 +143,29 @@ class VoynichManuscript:
                     brackets = re.findall("\[.*?\]", text)
                     for bracket in brackets:
                         text = text.replace(bracket, bracket[1:-1].split(":")[0])
+                    
+                    # if this is the end of a paragraph, finish up and reset to new paragraph
                     if "<$>" in text:
                         text = text.replace("<$>", "")
                         paragraph += text
                         page.paragraphs.append(paragraph)
                         paragraph = ""
-                    else:
+                    else: # otherwise just add to current paragraph
                         paragraph += text
     
     def get_pages(self):
+        """Get list of page objects"""
         return self.pages.values()
     
     def get_lines(self):
+        """Get list of line objects"""
         lines = []
         for p in self.iterpages():
             lines.extend(p.lines)
         return lines
                  
     def get_paragraphs(self):
+        """Get list of paragraph strings"""
         paragraphs = []
         for p in self.iterpages():
             paragraphs.extend(p.paragraphs)
@@ -236,6 +243,7 @@ def _parse_variables(var_str):
     
     return var_dict
 
+# Page types, based on barbara shailor's assignment
 page_name_to_section = {
     'f1r': 'Herbal',
     'f1v': 'Herbal',
