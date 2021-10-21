@@ -44,6 +44,7 @@ class Page:
         self.section = None # this gets filled out in VoynichManuscript._assign_sections()
         
         self.lines = []
+        self.paragraphs = []
         
         self.num_lines = self.__len__()
 
@@ -84,7 +85,7 @@ class VoynichManuscript:
         # Trim excess spaces
         lines = [re.sub("\s\s+" , " ", line) for line in lines]
         
-        # iterate through each line and construct page and line objects
+        # iterate through each line of text, constructing pages and lines
         page = None
         for line in lines:
             # split into metadata and data 
@@ -110,9 +111,9 @@ class VoynichManuscript:
                 
                 # remove inline comments (if specified)
                 if not self.inline_comments:
-                    text = text.replace("<->", "")
+                    # text = text.replace("<->", "") # remove gap indicator (?)
                     text = re.sub("\<!.*?\>", "", text) # anything between <! and >
-                
+                    
                 # make new line object and store it
                 page.lines.append(Line(page_name, line_num, locator, locus, text))
     
@@ -130,6 +131,30 @@ class VoynichManuscript:
         for p in self.iterpages():
             lines.extend(p.lines)
         return lines
+    
+    def get_paragraphs(self, remove_gaps=True):
+        paragraphs = []
+        paragraph = ""
+        for line in self.iterlines():
+            if "P" in line.locus:
+                text = line.text.replace("<%>", "")
+                
+                if remove_gaps:
+                    text = text.replace("<->", "")
+                
+                # TODO: update this method to generate all combinations of all spelling variations
+                # temporary: only use all ambiguous character brackets i.e. [a:o], use only the first entry
+                brackets = re.findall("\[.*?\]", text)
+                for bracket in brackets:
+                    text = text.replace(bracket, bracket[1:-1].split(":")[0])
+                if "<$>" in text:
+                    text = text.replace("<$>", "")
+                    paragraph += text
+                    paragraphs.append(paragraph)
+                    paragraph = ""
+                else:
+                    paragraph += text
+        return paragraphs
     
     def iterpages(self):
         return iter(self.get_pages())
