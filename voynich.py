@@ -147,10 +147,14 @@ class VoynichManuscript:
                     # if this is the end of a paragraph, finish up and reset to new paragraph
                     if "<$>" in text:
                         text = text.replace("<$>", "")
+                        if len(paragraph) > 0:
+                            text = "." + text
                         paragraph += text
                         page.paragraphs.append(paragraph)
                         paragraph = ""
                     else: # otherwise just add to current paragraph
+                        if len(paragraph) > 0:
+                            text = "." + text
                         paragraph += text
     
     def get_pages(self):
