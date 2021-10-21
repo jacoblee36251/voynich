@@ -25,4 +25,4 @@ Line(<%>fachys.ykal.ar.ataiin.shol.shory.[cth:oto]res.y.kor.sholdy)
 <%>fachys.ykal.ar.ataiin.shol.shory.[cth:oto]res.y.kor.sholdy
 ```
 
-Each `Page` object also contains a list of paragraphs `Page.paragraphs`. These paragraphs have some additional processing on them, removing paragraph markers (`<%>` and `<$>`), gap indicators (`<->`), and (currently) chooses the first possible interpretation of ambiguous characters (i.e. `[o:a]` -> `o`).
+Each `Page` object also contains a list of paragraphs `Page.paragraphs`. These paragraphs have some additional processing on them, removing paragraph markers (`<%>` and `<$>`), gap indicators (`<->`), and (currently) chooses the first possible interpretation of ambiguous characters (i.e. `[o:a]` -> `o`). For future work, will update paragraph parser to produce one paragraph for every possible combination of ambiguous characters.
