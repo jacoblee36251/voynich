@@ -23,6 +23,9 @@ Line(<%>fachys.ykal.ar.ataiin.shol.shory.[cth:oto]res.y.kor.sholdy)
 
 >>> print(vm.pages["f1r"][0].text)
 <%>fachys.ykal.ar.ataiin.shol.shory.[cth:oto]res.y.kor.sholdy
+
+>>> print(vm.get_paragraphs()[0])
+'fachys.ykal.ar.ataiin.shol.shory.cthres.y.kor.sholdysory.ckhar.or,y.kair.chtaiin.shar.ase.cthar.cthar,dansyaiir.sheky.or.ykaiin.shod.cthoary.cthes.daraiin.sysoiin.oteey.oteos,roloty.cthiar,daiin.okaiin.or.okansair,y.chear.cthaiin.cphar.cfhaiinydaraishy'
 ```
 
 Each `Page` object also contains a list of paragraphs `Page.paragraphs`. These paragraphs have some additional processing on them, removing paragraph markers (`<%>` and `<$>`), gap indicators (`<->`), and (currently) chooses the first possible interpretation of ambiguous characters (i.e. `[o:a]` -> `o`). For future work, will update paragraph parser to produce one paragraph for every possible combination of ambiguous characters.
