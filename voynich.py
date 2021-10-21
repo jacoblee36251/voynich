@@ -74,6 +74,9 @@ class VoynichManuscript:
         # assign illust_types based on barbara shailor's description of them
         self._assign_sections()
         
+        # parse paragraphs and assign them to pages
+        self._parse_paragraphs()
+        
     def __repr__(self):
         return f"VoynichManuscript(num_pages={len(self.pages)}, inline_comments={self.inline_comments})"
         
@@ -121,7 +124,30 @@ class VoynichManuscript:
         """Assigns sections based on this description
         https://pre1600ms.beinecke.library.yale.edu/docs/pre1600.ms408.HTM"""
         for k in self.pages.keys():
-            self.pages[k].section = page_name_to_section[k]            
+            self.pages[k].section = page_name_to_section[k]   
+            
+    def _parse_paragraphs(self, remove_gaps=True):
+        for page in self.iterpages():
+            paragraph = ""
+            for line in page.iterlines():
+                if "P" in line.locus:
+                    text = line.text.replace("<%>", "")
+                    
+                    if remove_gaps:
+                        text = text.replace("<->", "")
+                    
+                    # TODO: update this method to generate all combinations of all spelling variations
+                    # temporary: only use all ambiguous character brackets i.e. [a:o], use only the first entry
+                    brackets = re.findall("\[.*?\]", text)
+                    for bracket in brackets:
+                        text = text.replace(bracket, bracket[1:-1].split(":")[0])
+                    if "<$>" in text:
+                        text = text.replace("<$>", "")
+                        paragraph += text
+                        page.paragraphs.append(paragraph)
+                        paragraph = ""
+                    else:
+                        paragraph += text
     
     def get_pages(self):
         return self.pages.values()
@@ -131,29 +157,11 @@ class VoynichManuscript:
         for p in self.iterpages():
             lines.extend(p.lines)
         return lines
-    
-    def get_paragraphs(self, remove_gaps=True):
+                 
+    def get_paragraphs(self):
         paragraphs = []
-        paragraph = ""
-        for line in self.iterlines():
-            if "P" in line.locus:
-                text = line.text.replace("<%>", "")
-                
-                if remove_gaps:
-                    text = text.replace("<->", "")
-                
-                # TODO: update this method to generate all combinations of all spelling variations
-                # temporary: only use all ambiguous character brackets i.e. [a:o], use only the first entry
-                brackets = re.findall("\[.*?\]", text)
-                for bracket in brackets:
-                    text = text.replace(bracket, bracket[1:-1].split(":")[0])
-                if "<$>" in text:
-                    text = text.replace("<$>", "")
-                    paragraph += text
-                    paragraphs.append(paragraph)
-                    paragraph = ""
-                else:
-                    paragraph += text
+        for p in self.iterpages():
+            paragraphs.extend(p.paragraphs)
         return paragraphs
     
     def iterpages(self):
@@ -161,6 +169,9 @@ class VoynichManuscript:
     
     def iterlines(self):
         return iter(self.get_lines())
+    
+    def iterparagraphs(self):
+        return iter(self.get_paragraphs())
 
 # For converting letters to numbers (both upper and lower case map to same number)
 alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
