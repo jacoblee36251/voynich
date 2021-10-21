@@ -1,7 +1,9 @@
-# Voynich Manuscript Resources
-Resources for doing NLP/ML/DL on the Voynich Manuscript.
+# Voynich Manuscript Parser and Resources
+Pure Python parser for the IVTFF formatted ZL transliteration of the Voynich Manuscript.
 
-`voynich.VoynichManuscript` is what you'll likely mostly be using, it contains `voynich.Page`s, which contain `voynich.Line`s. Will write better docs later.
+Intended for NLP/ML/DL use on the Voynich Manuscript.
+
+`voynich.VoynichManuscript` is what you'll likely mostly be using, it contains `voynich.Page`s, which contain `voynich.Line`s.
 
 Example usage (subject to change):
 
@@ -22,3 +24,5 @@ Line(<%>fachys.ykal.ar.ataiin.shol.shory.[cth:oto]res.y.kor.sholdy)
 >>> print(vm.pages["f1r"][0].text)
 <%>fachys.ykal.ar.ataiin.shol.shory.[cth:oto]res.y.kor.sholdy
 ```
+
+Each `Page` object also contains a list of paragraphs `Page.paragraphs`. These paragraphs have some additional processing on them, removing paragraph markers (`<%>` and `<$>`), gap indicators (`<->`), and (currently) chooses the first possible interpretation of ambiguous characters (i.e. `[o:a]` -> `o`).
