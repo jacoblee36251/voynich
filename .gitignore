@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 data/
 dev.ipynb
+dist/*
+voynich-0.0.1/*
+voynich.egg-info/*
