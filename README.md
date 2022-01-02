@@ -3,6 +3,14 @@ Pure Python parser for the [IVTFF](http://www.voynich.nu/software/ivtt/IVTFF_for
 
 Intended for NLP/ML/DL use on the Voynich Manuscript.
 
+## Installation
+
+`pip install voynich`
+
+[PyPi page](https://pypi.org/project/voynich/)
+
+## Example Usage
+
 `voynich.VoynichManuscript` is what you'll likely mostly be using, it contains `voynich.Page`s, which contain `voynich.Line`s.
 
 Example usage (subject to change):
