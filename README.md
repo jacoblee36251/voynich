@@ -1,5 +1,5 @@
 # Voynich Manuscript Parser and Resources
-Pure Python parser for the [IVTFF](http://www.voynich.nu/software/ivtt/IVTFF_format.pdf) formatted [ZL transliteration](http://www.voynich.nu/data/ZL_ivtff_1r.txt) of the [Voynich Manuscript](https://en.wikipedia.org/wiki/Voynich_manuscript).
+Pure Python parser for the [IVTFF](http://www.voynich.nu/software/ivtt/IVTFF_format.pdf)-formatted [ZL transliteration](http://www.voynich.nu/data/ZL_ivtff_1r.txt) of the [Voynich Manuscript](https://en.wikipedia.org/wiki/Voynich_manuscript).
 
 Intended for NLP/ML/DL use on the Voynich Manuscript.
 
